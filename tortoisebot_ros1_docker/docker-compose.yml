@@ -1,0 +1,72 @@
+version: '3'
+services:
+  ros_master:
+    image: osrf/ros:noetic-desktop-full-focal
+    command: roscore
+    networks:
+      - ros_network
+    ports:
+      - "11311:11311"
+
+  gazebo:
+    build:
+      context: ../
+      dockerfile: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-gazebo
+    depends_on:
+      - ros_master
+    environment:
+      - ROS_MASTER_URI=http://ros_master:11311
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    networks:
+      - ros_network
+
+  slam:
+    build:
+      context: ../
+      dockerfile: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-slam
+    depends_on:
+      - ros_master
+    environment:
+      - ROS_MASTER_URI=http://ros_master:11311
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    networks:
+      - ros_network
+
+  waypoints:
+    build:
+      context: ../
+      dockerfile: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-waypoints
+    depends_on:
+      - ros_master
+    environment:
+      - ROS_MASTER_URI=http://ros_master:11311
+    networks:
+      - ros_network
+
+  webapp:
+    build:
+      context: ../
+      dockerfile: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-webapp
+    depends_on:
+      - ros_master
+    environment:
+      - ROS_MASTER_URI=http://ros_master:11311
+      - DISPLAY=${DISPLAY}
+      - SLOT_ROSBRIDGE_PORT=20001
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    networks:
+      - ros_network
+    ports:
+      - "9090:9090"
+      - "11315:11315"
+      - "7000:7000"
+      - "20001:20001"
+
+networks:
+  ros_network:
+    driver: bridge

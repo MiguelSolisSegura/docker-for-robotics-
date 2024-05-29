@@ -1,0 +1,43 @@
+# Base image
+FROM osrf/ros:noetic-desktop-full-focal
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+  python3 \
+  python3-pip \
+  nginx \
+  ros-noetic-rosbridge-server \
+  ros-noetic-web-video-server \
+  ros-noetic-tf2-ros \
+  ros-noetic-tf2-tools \
+  && rm -rf /var/lib/apt/lists/*
+
+# Ensure python command points to python3
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# Make workspace
+WORKDIR /
+RUN mkdir -p /simulation_ws/src
+WORKDIR /simulation_ws/src
+
+# Copy the webpage files
+COPY tortoisebot_webapp /simulation_ws/src/tortoisebot_webapp
+
+# Copy the bridge and launch files
+COPY course_web_dev_ros /simulation_ws/src/course_web_dev_ros
+
+# Source ros noetic and build workspace
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /simulation_ws && catkin_make"
+
+# Copy Nginx configuration file
+COPY tortoisebot_ros1_docker/my-site.conf /etc/nginx/sites-available/my-site.conf
+RUN ln -s /etc/nginx/sites-available/my-site.conf /etc/nginx/sites-enabled/
+
+# Set the ROS master URI
+ENV ROS_MASTER_URI=http://ros_master:11311
+
+# Expose the necessary ports for rosbridge, web video server, and Nginx
+EXPOSE 11311 9090 11315 7000
+
+# Set the entry point to run the web application and the necessary bridges
+ENTRYPOINT ["/bin/bash", "-c", "source /simulation_ws/devel/setup.bash && nginx && roslaunch course_web_dev_ros web.launch"]

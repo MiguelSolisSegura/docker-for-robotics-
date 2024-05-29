@@ -1,0 +1,28 @@
+# Base image
+FROM osrf/ros:noetic-desktop-full-focal
+
+# Install dependencies
+RUN apt-get update && apt-get install -y python3 python3-pip && rm -rf /var/lib/apt/lists/*
+
+# Ensure python command points to python3
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# Make workspace
+WORKDIR /
+RUN mkdir -p /simulation_ws/src
+WORKDIR /simulation_ws/src
+
+# Copy the files in the current directory into the container
+COPY course_web_dev_ros /simulation_ws/src/course_web_dev_ros
+
+# Source ros noetic and build workspace
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /simulation_ws && catkin_make"
+
+# Set the ROS master URI
+ENV ROS_MASTER_URI=http://ros_master:11311
+
+# Expose the necessary ports
+EXPOSE 11311
+
+# Set the entry point to run the action server
+ENTRYPOINT ["/bin/bash", "-c", "source /simulation_ws/devel/setup.bash && rosrun course_web_dev_ros tortoisebot_action_server.py"]
