@@ -1,0 +1,10 @@
+# Use the existing image tortoisebot-ros1-real as the base image
+FROM tortoisebot_ros1_docker_tortoisebot-ros1-real:latest
+
+# Install hector_slam package
+RUN apt-get update && apt-get install -y \
+    ros-noetic-hector-slam \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set the entry point to the hector_mapping node
+ENTRYPOINT ["/bin/bash", "-c", "source /root/catkin_ws/devel/setup.bash && rosrun hector_mapping hector_mapping _use_sim_time:=false _base_frame:=base_link _odom_frame:=base_link _map_frame:=map scan:=/scan"]

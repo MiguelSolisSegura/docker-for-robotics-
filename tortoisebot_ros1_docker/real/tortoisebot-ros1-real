@@ -1,0 +1,52 @@
+# Use the official ROS Noetic base image for arm64 architecture
+FROM arm64v8/ros:noetic-ros-base
+
+# Install necessary packages
+RUN apt-get update && apt-get install -y \
+    ros-noetic-joy \
+    ros-noetic-teleop-twist-joy \
+    ros-noetic-teleop-twist-keyboard \
+    ros-noetic-amcl \
+    ros-noetic-map-server \
+    ros-noetic-move-base \
+    ros-noetic-urdf \
+    ros-noetic-xacro \
+    ros-noetic-rqt-image-view \
+    ros-noetic-gmapping \
+    ros-noetic-navigation \
+    ros-noetic-joint-state-publisher \
+    ros-noetic-robot-state-publisher \
+    ros-noetic-slam-gmapping \
+    ros-noetic-dwa-local-planner \
+    ros-noetic-joint-state-publisher-gui \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up the catkin workspace
+WORKDIR /root/catkin_ws/src
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && mkdir -p /root/catkin_ws/src && cd /root/catkin_ws/ && catkin_make"
+
+# Install raspicam dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    ros-noetic-compressed-image-transport \
+    ros-noetic-camera-info-manager \
+    libraspberrypi-dev \
+    libraspberrypi-bin \
+    && rm -rf /var/lib/apt/lists/*
+
+# Clone the TortoiseBot repository
+RUN git clone --branch noetic https://github.com/rigbetellabs/tortoisebot.git /root/catkin_ws/src/tortoisebot
+
+# Build the workspace
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /root/catkin_ws && catkin_make"
+
+# Source the workspace
+RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
+
+# Install raspberry pi dependencies
+RUN apt-get update && apt-get install -y \
+    python3-rpi.gpio \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set the entry point to the bringup.launch file
+ENTRYPOINT ["/bin/bash", "-c", "source /root/catkin_ws/devel/setup.bash && roslaunch tortoisebot_firmware bringup.launch"]
