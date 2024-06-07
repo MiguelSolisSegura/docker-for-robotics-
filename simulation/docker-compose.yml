@@ -9,9 +9,8 @@ services:
       - "11311:11311"
 
   gazebo:
-    build:
-      context: ../
-      dockerfile: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-gazebo
+    image: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-gazebo
+    container_name: tortoisebot-ros1-gazebo
     depends_on:
       - ros_master
     environment:
@@ -23,9 +22,8 @@ services:
       - ros_network
 
   slam:
-    build:
-      context: ../
-      dockerfile: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-slam
+    image: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-slam
+    container_name: tortoisebot-ros1-slam
     depends_on:
       - ros_master
     environment:
@@ -37,9 +35,8 @@ services:
       - ros_network
 
   waypoints:
-    build:
-      context: ../
-      dockerfile: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-waypoints
+    image: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-waypoints
+    container_name: tortoisebot-ros1-waypoints
     depends_on:
       - ros_master
     environment:
@@ -48,9 +45,8 @@ services:
       - ros_network
 
   webapp:
-    build:
-      context: ../
-      dockerfile: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-webapp
+    image: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-webapp
+    container_name: tortoisebot-ros1-webapp
     depends_on:
       - ros_master
     environment:
