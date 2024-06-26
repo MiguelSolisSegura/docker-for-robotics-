@@ -42,11 +42,22 @@ RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /root/catkin_ws && cat
 
 # Source the workspace
 RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc
 
 # Install raspberry pi dependencies
 RUN apt-get update && apt-get install -y \
     python3-rpi.gpio \
+    ros-noetic-rviz \
     && rm -rf /var/lib/apt/lists/*
 
-# Set the entry point to the bringup.launch file
-ENTRYPOINT ["/bin/bash", "-c", "source /root/catkin_ws/devel/setup.bash && roslaunch tortoisebot_firmware bringup.launch"]
+# Copy the RViz configuration file into the container
+COPY ros1_config.rviz /root/catkin_ws/
+
+# Copy the entrypoint script into the container
+COPY entrypoint.sh /root/
+
+# Make the entrypoint script executable
+RUN chmod +x /root/entrypoint.sh
+
+# Set the entry point to the shell script
+ENTRYPOINT ["/root/entrypoint.sh"]

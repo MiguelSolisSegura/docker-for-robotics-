@@ -5,32 +5,29 @@ services:
     image: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-real
     container_name: tortoisebot-ros1-real
     privileged: true
+    network_mode: "host"
     volumes:
       - /dev/mem:/dev/mem
       - /dev/vchiq:/dev/vchiq
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /dev/dri:/dev/dri
+      - $HOME/.Xauthority:/root/.Xauthority
     environment:
-      - ROS_MASTER_URI=http://tortoisebot-ros1-real:11311
-      - ROS_HOSTNAME=tortoisebot-ros1-real
-    networks:
-      - ros_network
+      - DISPLAY=$DISPLAY
+      - QT_X11_NO_MITSHM=1
+      - ROS_MASTER_URI=http://$ROS_HOSTNAME:11311
+      - ROS_HOSTNAME=$ROS_HOSTNAME
 
   tortoisebot-ros1-slam-real:
     image: miguelsolissegura/miguelsolissegura-cp22:tortoisebot-ros1-slam-real
     container_name: tortoisebot-ros1-slam-real
     privileged: true
+    network_mode: "host"
     volumes:
       - /dev/mem:/dev/mem
       - /dev/vchiq:/dev/vchiq
     environment:
-      - ROS_MASTER_URI=http://tortoisebot-ros1-real:11311
-      - ROS_HOSTNAME=tortoisebot-ros1-slam-real
+      - ROS_MASTER_URI=http://$ROS_HOSTNAME:11311
+      - ROS_HOSTNAME=$ROS_HOSTNAME
     depends_on:
       - tortoisebot-ros1-real
-    networks:
-      - ros_network
-    ports:
-      - "11311:11311"
-
-networks:
-  ros_network:
-    driver: bridge
